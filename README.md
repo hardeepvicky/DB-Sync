@@ -1,8 +1,8 @@
 # DB-Sync : Mysql Sync Tool
 <p>
+This tool use to sync database among developers working in git version control project. In this each git branch have seprate changes logs written in local drive. To distribute the change, Developer have to write database changes to then push them to git
 <h3>
 <b>Important Note : </b> I tested with Mysql Workbench. it is strongly recommended that use Mysql Workbench. Beacuse it log all its queries to mysql.general_log table correctly. Other tool like phpmyadmin do not log query correctly.</h3>
-This tool use to sync database among developers working in git version control project. In this each git branch have seprate changes logs written in local drive. To distribute the change, Developer have to write database changes to then push them to git
 </p>
 # Setup
 <p>
