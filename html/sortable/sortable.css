@@ -1,0 +1,15 @@
+.table-sortable {
+    position: relative;
+}
+.table-sortable .sortable-placeholder {
+    height: 37px;
+}
+.table-sortable .sortable-placeholder:after {
+    position: absolute;
+    z-index: 10;
+    content: " ";
+    height: 37px;
+    background: #f9f9f9;
+    left: 0;
+    right: 0;
+}
