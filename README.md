@@ -9,7 +9,7 @@ This tool use to sync database among developers working in git version control p
 <ul>
 <li>Download this tool, put inside of your working project</li>
 <li>Rename config.sample.php to config.php</li>
-<li>Change Constant <b>BASE_URL</b>(url path of db sync), <b>DEVELOPER</b>(Developer Name), <b>GIT_VERSION</b>(Current Git Branch)</li>
+<li>Change Constant <b>BASE_URL</b>(url path of db sync), <b>DEVELOPER</b>(Developer Name), <b>Git Path</b>(Current Git Branch)</li>
 <li>Change static database config</li>
 <li><b>Mysql Setting - Run Following Queries</b>
   <ul>
@@ -21,15 +21,15 @@ This tool use to sync database among developers working in git version control p
 </p>
 # Options 
 <p>
-<b>config::$dml_tables</b> : By Default this tool only fetch DDL Change, But in some cases DML statements are required to distribute. So if you want to log DML change also, add those table names in this static variable
+<b>SharedConfig::$dml_tables</b> : By Default this tool only fetch DDL Change, But in some cases DML statements are required to distribute. So if you want to log DML change also, add those table names in this static variable
 <br/>
 <pre>
-class config
+class SharedConfig
 {
     public static $dml_tables = array(
-        "users", "settings"
+        "settings", "menus"
     );
 }
 </pre>
-In above Code, Tool will also log DML Changes of users and settings table.
+In above Code, Tool will also log DML Changes of menus and settings table.
 </p>
