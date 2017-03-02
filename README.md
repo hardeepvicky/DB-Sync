@@ -9,7 +9,7 @@ This tool use to sync database among developers working in git version control p
 <ul>
 <li>Download this tool, put inside of your working project</li>
 <li>Rename config.sample.php to config.php</li>
-<li>Change Constant <b>BASE_URL</b>(url path of db sync), <b>DEVELOPER</b>(Developer Name), <b>Git Path</b>git_version("[PATH]") [PATH] is path of your project where .git is located </li>
+<li>Change Constant <b>BASE_URL</b>(url path of db sync), <b>DEVELOPER</b>(Developer Name), <b>Git Path</b> : git_version("[PATH]") [PATH] is path of your project where .git is located </li>
 <li>Change static database config</li>
 <li><b>Mysql Setting - Run Following Queries</b>
   <ul>
