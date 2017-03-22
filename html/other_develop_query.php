@@ -28,10 +28,10 @@
 <table class="table table-bordered table-sortable">
     <thead>
         <tr>
-            <th><input type="checkbox"  class="chk-select-all" data-href=".chk-child"> #</th>
+            <th style="width: 10%"><input type="checkbox"  class="chk-select-all" data-href=".chk-child"> #</th>
             <th>Developer</th>         
             <th>Query</th>         
-            <th>Datetime</th>
+            <th style="width: 10%">Datetime</th>
         </tr>
     </thead>
     <tbody>

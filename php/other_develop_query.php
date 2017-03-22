@@ -24,7 +24,7 @@ foreach($developer_files as $k => $file)
     }
     else
     {
-        $developer  = pathinfo(BASE_PATH . "developers/" . $file, PATHINFO_FILENAME);
+        $developer = pathinfo(BASE_PATH . "developers/" . $file, PATHINFO_FILENAME);
         
         $data = CsvUtility::fetchCSV(BASE_PATH . "developers/" . $file);
         $ret_data = array();
@@ -40,7 +40,7 @@ foreach($developer_files as $k => $file)
                 }
             }
             
-            if ($found == FALSE)
+            if ($found == FALSE && $arr["will_execute"] == 1)
             {
                 $ret_data[$arr['id']] = $arr;
             }

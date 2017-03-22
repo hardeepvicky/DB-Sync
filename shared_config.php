@@ -1,9 +1,7 @@
 <?php
 class SharedConfig
 {
-    public static $dml_tables = array(
-        "menus"
-    );
+    public static $dml_tables = array();
     
     public static function url($file, $args = array())
     {

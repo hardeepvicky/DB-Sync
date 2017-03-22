@@ -1,4 +1,7 @@
 <?php
+ini_set('memory_limit', '128M');
+ini_set('max_execution_time', 60 * 60 * 30);   
+            
 require_once './php/include/functions.php';
 require_once './shared_config.php';
 require_once './config.php';

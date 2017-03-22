@@ -81,6 +81,7 @@ if ($sync_data == false)
 }
 
 $last_sync = end($sync_data);
+
 $last_sync_on = false;
 if($last_sync)
 {
@@ -124,7 +125,7 @@ foreach($logs as $k => $log)
     }
     else
     {
-        $continue = get_DDL_query_type($arg_temp, $db, $current_db_set_default == false ? true : false);
+        $ddl_type = $continue = get_DDL_query_type($arg_temp, $db, $current_db_set_default == false ? true : false);
         
         if (isset(config::$dml_tables) && !empty(config::$dml_tables))
         {   
@@ -141,6 +142,12 @@ foreach($logs as $k => $log)
         {
             unset($logs[$k]);
             continue;
+        }
+        
+        if (in_array($ddl_type, array('VIEW', 'PROCEDURE', 'FUNCTION')))
+        {
+            $arg = str_replace("DEFINER = `root`@`localhost` SQL SECURITY DEFINER", "", $arg);
+            $arg = str_replace("ALGORITHM = UNDEFINED", "", $arg);
         }
     }
     
@@ -163,6 +170,22 @@ foreach($logs as $k => $log)
 
 if (isset($_GET['write_query_to_csv']))
 {
+    $ids = $_POST['data']['ids'];
+    
+    foreach($logs as $k => $log)
+    {
+        if(in_array($log['id'], $ids))
+        {
+            $log["will_execute"] = 1;
+        }
+        else
+        {
+            $log["will_execute"] = 0;
+        }
+        
+        $logs[$k] = $log;
+    }
+    
     if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
     {
         Session::writeFlash("success", "Queries are wrtten to " . DEVELOPER . ".csv File");

@@ -7,7 +7,7 @@
             <th>#</th>
             <th>Developer</th>            
             <th>Query</th>
-            <th>Datetime</th>
+            <th style="width: 10%">Datetime</th>
         </tr>
     </thead>
     <tbody>
