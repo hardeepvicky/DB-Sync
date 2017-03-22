@@ -1,5 +1,5 @@
 <?php
-ini_set('memory_limit', '128M');
+ini_set('memory_limit', '512M');
 ini_set('max_execution_time', 60 * 60 * 30);   
             
 require_once './php/include/functions.php';
@@ -15,6 +15,8 @@ if (!FileUtility::createFolder(BASE_PATH . "developers/"))
 {
 	die("failed to create path " . BASE_PATH . "developers/");
 }
+
+chmod(BASE_PATH, 0777);
 
 $mysql = new Mysql(config::$database['server'], config::$database['username'], config::$database['password'], config::$database['database']);
 
