@@ -1,5 +1,5 @@
 <?php
-ini_set('memory_limit', '512M');
+ini_set('memory_limit', '128M');
 ini_set('max_execution_time', 60 * 60 * 30);   
             
 require_once './php/include/functions.php';
@@ -29,6 +29,11 @@ $load_file = isset($_GET['load_file']) ? $_GET['load_file'] : "index";
 $load_file .= ".php";
 
 require_once "php/$load_file";
+
+if (SQL_LOCAL_CHANGE_ENABLE)
+{
+    $mysql->query("SET GLOBAL log_output = 'TABLE';SET GLOBAL general_log = 'ON';");
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -52,6 +57,13 @@ require_once "php/$load_file";
         <script src="html/sortable/jquery.sortable.min.js" type="text/javascript"></script>
         
         <script src="html/js/jquery-extend.js" type="text/javascript"></script>
+        
+        <style>
+            .page-header
+            {
+                margin: 0px;
+            }
+        </style>
     </head>
     <body>
         <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -68,7 +80,9 @@ require_once "php/$load_file";
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li class="<?= $load_file == "index.php" ? "active" : "" ?>"><a href="<?= config::url("index") ?>">Home</a></li>
-                        <li class="<?= $load_file == "fetch_query.php" ? "active" : "" ?>"><a href="<?= config::url("fetch_query") ?>">Local Database Changes</a></li>
+                        <?php if (SQL_LOCAL_CHANGE_ENABLE): ?>
+                            <li class="<?= $load_file == "fetch_query.php" ? "active" : "" ?>"><a href="<?= config::url("fetch_query") ?>">Local Database Changes</a></li>
+                        <?php endif; ?>
                         <li class="<?= $load_file == "other_develop_query.php" ? "active" : "" ?>"><a href="<?= config::url("other_develop_query") ?>">Non Sync</a></li>
                     </ul>
                 </div>
@@ -100,6 +114,7 @@ require_once "php/$load_file";
                 </div>
             <?php endif; ?>
             
+			<h5>Database : <?php echo config::$database['database']  ?></h5>
             <?php include_once "html/$load_file"; ?>
         </div>
     </body>

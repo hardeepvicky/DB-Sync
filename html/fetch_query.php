@@ -30,14 +30,20 @@
                 $a++; 
         ?>
         <tr>
-            <td><input type="checkbox" class="chk-child" name="data[ids][]" value="<?= $log["id"] ?>" /></td>
+            <td>                
+                <input type="hidden" name="log[<?= $log["id"] ?>][id]" value="<?= $log["id"] ?>" />
+                <input type="hidden" name="log[<?= $log["id"] ?>][datetime]" value="<?= $log["datetime"] ?>" />
+                <input type="hidden" name="log[<?= $log["id"] ?>][query]" value="<?= $log["query"] ?>" />
+                <input type="checkbox" class="chk-child" name="log[<?= $log["id"] ?>][will_execute]" value="1" />
+            </td>
             <td><?= $a ?></td>
             <td><?= $log['query'] ?></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
-    
+</form>
+
 <script type="text/javascript">
     $(".submit").click(function()
     {

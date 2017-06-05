@@ -1,4 +1,31 @@
 <?php 
+if (!empty($_POST) && isset($_GET['write_query_to_csv']))
+{
+    $logs = $_POST['log'];
+    
+    foreach($logs as $k => $log)
+    {
+        if(!isset($log["will_execute"]))
+        {
+            $log["will_execute"] = 0;
+        }
+        
+        $logs[$k] = $log;
+    }
+    
+    if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
+    {
+        Session::writeFlash("success", "Queries are wrtten to " . DEVELOPER . ".csv File");
+    }
+    else
+    {
+        Session::writeFlash("failure", "Failed to write Queries.");
+    }
+    
+    header('Location:' . config::url("fetch_query"));
+    die();
+}
+
 $or = array(
     array(
         "field" => "argument",
@@ -257,35 +284,4 @@ foreach($logs as $k => $log)
         'query' => $log['argument']
     );
     $id++;
-}
-
-if (isset($_GET['write_query_to_csv']))
-{
-    $ids = $_POST['data']['ids'];
-    
-    foreach($logs as $k => $log)
-    {
-        if(in_array($log['id'], $ids))
-        {
-            $log["will_execute"] = 1;
-        }
-        else
-        {
-            $log["will_execute"] = 0;
-        }
-        
-        $logs[$k] = $log;
-    }
-    
-    if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
-    {
-        Session::writeFlash("success", "Queries are wrtten to " . DEVELOPER . ".csv File");
-    }
-    else
-    {
-        Session::writeFlash("failure", "Failed to write Queries.");
-    }
-    
-    header('Location:' . config::url("fetch_query"));
-    die();
 }
