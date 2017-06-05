@@ -1,15 +1,18 @@
 <?php 
-$sync_data = CsvUtility::fetchCSV(SYNC_FILE);
+$file = new CsvUtility(SYNC_FILE);
+$sync_data = $file->find();
+$executed_sync_data = $file->find(array(), array("is_execute" => 1));
 $last_sync = $last_sync_on = false;
 
 if ($sync_data == false)
 {
     $sync_data = array();
 }
-else
+
+if ($executed_sync_data)
 {
-    $last_sync = end($sync_data);
-    $last_sync_on = $last_sync['datetime'];
+    $last_sync = end($executed_sync_data);
+    $last_sync_on = $last_sync['datetime']; 
 }
 
 $non_sync_data = array();
@@ -70,9 +73,13 @@ if (isset($_GET['sync_now']))
             }
             
             $db = config::$database['database'];
-            if (!$mysql->query("SET GLOBAL general_log = 'OFF';"))
+            
+            if (SQL_LOCAL_CHANGE_ENABLE)
             {
-                throw new Exception(mysqli_error(Mysql::$conn));
+                if (!$mysql->query("SET GLOBAL general_log = 'OFF';"))
+                {
+                    throw new Exception(mysqli_error(Mysql::$conn));
+                }
             }
             
             if (!$mysql->query("USE $db;"))
@@ -119,7 +126,10 @@ if (isset($_GET['sync_now']))
         Session::writeFlash("failure", $ex->getMessage());
     }
     
-    $mysql->query("SET GLOBAL general_log = 'ON';");
+    if (SQL_LOCAL_CHANGE_ENABLE)
+    {
+        $mysql->query("SET GLOBAL general_log = 'ON';");
+    }
     
     if ($handle)
     {

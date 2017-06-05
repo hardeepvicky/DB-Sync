@@ -2,13 +2,13 @@
 define("BASE_URL", '/DB-Sync/');
 define("DEVELOPER", 'hardeep');
 
-define("GIT_VERSION", git_version("../../../"));
-define("BASE_PATH", '.sync/' . GIT_VERSION . "/");
+define("BASE_PATH", '.sync/');
 
 define("SYNC_FILE", BASE_PATH . "sync.csv");
-define("BASE_SQL_FILE", BASE_PATH . "database.sql");
 
 define("SYNC_DEVELOPER_FILE", BASE_PATH . "developers/" . DEVELOPER . ".csv");
+
+define("SQL_LOCAL_CHANGE_ENABLE", true);
 
 class config extends SharedConfig
 {
@@ -17,5 +17,19 @@ class config extends SharedConfig
         "username" => "root",
         "password" => "password",
         "database" => ""
-    );    
+    );
+    
+    public static function init()
+    {
+        require_once '../../Config/database.php';
+        $databaseConfig = new DATABASE_CONFIG();
+        
+        self::$database['server'] = $databaseConfig->default["host"];
+        self::$database['username'] = $databaseConfig->default["login"];
+        self::$database['password'] = $databaseConfig->default["password"];
+        self::$database['database'] = $databaseConfig->default["database"];
+    }
 }
+
+//link to cakephp database file
+config::init();

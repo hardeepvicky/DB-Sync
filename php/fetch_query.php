@@ -102,6 +102,7 @@ $logs = $mysql->select($q);
 $current_db_set_default = false;
 $db = config::$database['database'];
 //debug($logs); exit;
+$sp_list = $view_list = $function_list = array();
 foreach($logs as $k => $log)
 {
     $log['argument'] = trim(preg_replace('/\s+/', ' ', $log['argument']));
@@ -144,9 +145,14 @@ foreach($logs as $k => $log)
             continue;
         }
         
-        if (in_array($ddl_type, array('VIEW', 'PROCEDURE', 'FUNCTION')))
+        if (str_contain($ddl_type, "PROCEDURE") || str_contain($ddl_type, "FUNCTION") || str_contain($ddl_type, "VIEW"))
         {
-            $arg = str_replace("DEFINER = `root`@`localhost` SQL SECURITY DEFINER", "", $arg);
+            $arg = str_replace("DEFINER=`root`@`localhost`", "", $arg);
+            $arg = str_replace("DEFINER= `root`@`localhost`", "", $arg);
+            $arg = str_replace("DEFINER =`root`@`localhost`", "", $arg);
+            $arg = str_replace("SQL SECURITY DEFINER", "", $arg);
+            $arg = str_replace("ALGORITHM=UNDEFINED", "", $arg);
+            $arg = str_replace("ALGORITHM= UNDEFINED", "", $arg);
             $arg = str_replace("ALGORITHM = UNDEFINED", "", $arg);
         }
     }
@@ -154,7 +160,92 @@ foreach($logs as $k => $log)
     $arg = str_replace("`$db`.", "", $arg);
     $arg = str_replace("$db.", "", $arg);
     
-    $logs[$k]['argument'] = $arg;
+    $arg = trim(preg_replace('/\s+/', ' ', $arg));
+    
+    $log['argument'] = $arg;
+    
+    if (str_contain($ddl_type, "PROCEDURE") || str_contain($ddl_type, "FUNCTION") || str_contain($ddl_type, "VIEW"))
+    {
+        $temp_arg = str_replace("IF EXISTS", "", $arg);
+        $temp_arg = trim(preg_replace('/\s+/', ' ', $temp_arg));
+        unset($logs[$k]);
+        
+        if (str_contain($ddl_type, "PROCEDURE"))
+        {
+            $name = get_name_from_ddl_sql($temp_arg, $ddl_type);
+
+            if ($name)
+            {
+                $sp_list[$name][$ddl_type] = $log;
+            }
+        }
+        else if (str_contain($ddl_type, "FUNCTION"))
+        {
+            $name = get_name_from_ddl_sql($temp_arg, $ddl_type);
+
+            if ($name)
+            {
+                $function_list[$name][$ddl_type] = $log;
+            }
+        }
+        else if (str_contain($ddl_type, "VIEW"))
+        {
+            $name = get_name_from_ddl_sql($temp_arg, $ddl_type);
+
+            if ($name)
+            {
+                $view_list[$name][$ddl_type] = $log;
+            }            
+        }
+    }
+    else
+    {
+        $logs[$k] = $log;
+    }
+}
+
+foreach($sp_list as $name => $ddl_types)
+{
+    if (isset($ddl_types['DROP PROCEDURE']))
+    {
+        $logs[] = $ddl_types['DROP PROCEDURE'];
+    }
+    
+    if (isset($ddl_types['CREATE PROCEDURE']))
+    {
+        $logs[] = $ddl_types['CREATE PROCEDURE'];
+    }
+}
+
+foreach($view_list as $name => $ddl_types)
+{
+    if (isset($ddl_types['DROP VIEW']))
+    {
+        $logs[] = $ddl_types['DROP VIEW'];
+    }
+    
+    if (isset($ddl_types['CREATE VIEW']))
+    {
+        $logs[] = $ddl_types['CREATE VIEW'];
+    }
+    
+    if (isset($ddl_types['CREATE OR REPLACE']))
+    {
+        $logs[] = $ddl_types['CREATE OR REPLACE'];
+    }
+}
+
+foreach($function_list as $name => $ddl_types)
+{
+    if (isset($ddl_types['DROP FUNCTION']))
+    {
+        $logs[] = $ddl_types['DROP FUNCTION'];
+    }
+    
+    if (isset($ddl_types['CREATE FUNCTION']))
+    {
+        $logs[] = $ddl_types['CREATE FUNCTION'];
+    }
 }
 
 $id = $last_sync ? ($last_sync["id"] + 1) : 1;

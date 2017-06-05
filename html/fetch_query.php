@@ -10,7 +10,7 @@
             </p>
         </div>
         <div class="col-12 col-md-6 pull-right" style="text-align: right; margin-top: 30px;">            
-            <button class="btn btn-primary submit">Write Changes To Git <b><?= GIT_VERSION ?></b> Branch</button>
+            <button class="btn btn-primary submit">Write Changes to <b><?= DEVELOPER ?>.csv</b></button>
         </div>
     </div>
 </div>
