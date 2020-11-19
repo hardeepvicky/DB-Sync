@@ -4,7 +4,7 @@ if (isset($_GET['write_query_to_csv']))
     $data = $_POST['data'];
     
     $max_datetime = false;
-    
+    $max_id = 1;
     foreach($data as $k => $log)
     {
         if (!isset($log["will_execute"]))
@@ -21,6 +21,11 @@ if (isset($_GET['write_query_to_csv']))
             $max_datetime = DateUtility::getDate($log["datetime"], DateUtility::DATETIME_FORMAT);
         }
         
+        if ($log['id'] > $max_id)
+        {
+            $max_id = $log['id'];
+        }
+        
         $logs[$k] = array(
             "id" => $log["id"],
             "datetime" => $log["datetime"],
@@ -32,10 +37,14 @@ if (isset($_GET['write_query_to_csv']))
     if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
     {
         $sync_log_utility = new CsvUtility(SYNC_LOG_FILE);
-        $count = $sync_log_utility->update("last_sync_datetime", $max_datetime, ["name" => DEVELOPER]);                
-        if ($count == 0)
+        $count = $sync_log_utility->update("last_sync_datetime", $max_datetime, ["name" => DEVELOPER]);
+        if ($count > 0)
         {
-            $count = $sync_log_utility->insert(["name" => DEVELOPER, "last_sync_datetime" => $max_datetime]);            
+            $sync_log_utility->update("last_sync_id", $max_id, ["name" => DEVELOPER]);
+        }
+        else
+        {
+            $count = $sync_log_utility->insert(["name" => DEVELOPER, "last_sync_datetime" => $max_datetime, 'last_sync_id' => $max_id]);            
         }
         
         Session::writeFlash("success", "Queries are wrtten to " . DEVELOPER . ".csv File");
@@ -126,11 +135,9 @@ if (isset(config::$dml_tables) && !empty(config::$dml_tables))
 $sync_log_utility = new CsvUtility(SYNC_LOG_FILE);
 $sync_log = $sync_log_utility->find("last_sync_datetime", ["name" => DEVELOPER]);
 
-$last_sync = false;
 $last_sync_on = "";
 if($sync_log)
 {
-    $last_sync = TRUE;
     $last_sync_on = $sync_log[1]['last_sync_datetime'];
     $conditions["AND"][] = array(
         "field" => "event_time",
@@ -274,7 +281,13 @@ foreach($routines as $name => $arr)
     }
 }
 
-$id = $last_sync ? ($last_sync["id"] + 1) : 1;
+$id = 1;
+
+if ($sync_log && isset($sync_log[1]['last_sync_id']))
+{
+    $id = $sync_log[1]['last_sync_id'] + 1;
+}
+
 foreach($logs as $k => $log)
 {
     $logs[$k] = array(
