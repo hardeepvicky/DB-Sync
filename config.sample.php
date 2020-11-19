@@ -5,7 +5,7 @@ define("DEVELOPER", 'hardeep');
 define("BASE_PATH", '.sync/');
 
 define("SYNC_FILE", BASE_PATH . "sync.csv");
-define("SYNC_LOG_FILE", BASE_PATH . "sync_log.csv");
+define("FETCH_LOG_FILE", BASE_PATH . "fetch_log.csv");
 define("SYNC_DEVELOPER_FILE", BASE_PATH . "developers/" . DEVELOPER . ".csv");
 
 

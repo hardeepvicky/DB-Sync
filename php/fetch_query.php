@@ -36,7 +36,7 @@ if (isset($_GET['write_query_to_csv']))
     
     if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
     {
-        $sync_log_utility = new CsvUtility(SYNC_LOG_FILE);
+        $sync_log_utility = new CsvUtility(FETCH_LOG_FILE);
         $count = $sync_log_utility->update("last_sync_datetime", $max_datetime, ["name" => DEVELOPER]);
         if ($count > 0)
         {
