@@ -1,18 +1,15 @@
 <?php 
-$file = new CsvUtility(SYNC_FILE);
-$sync_data = $file->find();
-$executed_sync_data = $file->find(array(), array("is_execute" => 1));
+$sync_data = CsvUtility::fetchCSV(SYNC_FILE);
 $last_sync = $last_sync_on = false;
 
 if ($sync_data == false)
 {
     $sync_data = array();
 }
-
-if ($executed_sync_data)
+else
 {
-    $last_sync = end($executed_sync_data);
-    $last_sync_on = $last_sync['datetime']; 
+    $last_sync = end($sync_data);
+    $last_sync_on = $last_sync['datetime'];
 }
 
 $non_sync_data = array();

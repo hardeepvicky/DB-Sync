@@ -25,23 +25,30 @@
     </div>
 </div>
 
-<table class="table table-bordered table-sortable">
+<table class="table table-bordered table-sortable sr-databtable">
     <thead>
         <tr>
-            <th style="width: 10%"><input type="checkbox"  class="chk-select-all" data-href=".chk-child"> #</th>
-            <th>Developer</th>         
-            <th>Query</th>         
-            <th style="width: 10%">Datetime</th>
+            <th style="text-align: center;">
+                <input type="checkbox" class="chk-select-all" data-href=".chk-child">
+            </th>
+            <th style="width: 10%; text-align: center;" data-search-clear="1">
+                #
+            </th>
+            <th data-search="1" data-sort="alpha">Developer</th>
+            <th data-search="1">Query</th>         
+            <th style="width: 150px" data-search="1" data-sort="alpha">Datetime</th>
         </tr>
     </thead>
     <tbody>
         <?php $a = 0; foreach($non_sync_data as $developer => $data): ?>
         <?php foreach($data as $arr):  $a++; ?>
             <tr>
-                <td>
-                    <span class="glyphicon glyphicon-move mover"></span>
-                    <input type="hidden" class="chk-child" name="data[<?= $developer ?>][<?= $arr['id']; ?>]" value="0" />
+                <td style="text-align: center;">
+                    <input type="hidden" name="data[<?= $developer ?>][<?= $arr['id']; ?>]" value="0" />
                     <input type="checkbox" class="chk-child" name="data[<?= $developer ?>][<?= $arr['id']; ?>]" value="1" />
+                </td>
+                <td style="text-align: center;">
+                    <span class="glyphicon glyphicon-move mover"></span>
                     <?= $a ?>
                 </td>
                 <td><?= $developer ?></td>
@@ -73,9 +80,9 @@
     
     $(document).ready(function()
     {
-        $('.table-sortable tbody').sortable({
-            handle: 'span.mover'
-        });
+//        $('.table-sortable tbody').sortable({
+//            handle: 'span.mover'
+//        });
 
         $(".chk-select-all").chkSelectAll();
     });

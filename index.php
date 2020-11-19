@@ -1,15 +1,17 @@
 <?php
-ini_set('memory_limit', '128M');
+ini_set('memory_limit', '512M');
 ini_set('max_execution_time', 60 * 60 * 30);   
             
 require_once './php/include/functions.php';
 require_once './shared_config.php';
+require_once './php/include/GitUtility.php';
 require_once './config.php';
 require_once './php/include/DateUtility.php';
 require_once './php/include/CsvUtility.php';
 require_once './php/include/FileUtility.php';
 require_once './php/include/Mysql.php';
 require_once './php/include/Session.php';
+
 
 if (!FileUtility::createFolder(BASE_PATH . "developers/"))
 {
@@ -43,20 +45,20 @@ if (SQL_LOCAL_CHANGE_ENABLE)
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>DB Sync - <?= DEVELOPER ?></title>
 
-        <link rel="stylesheet" href="html/bootstrap/css/bootstrap.min.css"/>
-        <link rel="stylesheet" href="html/bootstrap/css/bootstrap-theme.min.css"/>
-        <link rel="stylesheet" href="html/bootstrap-datatable/jquery.dataTables.min.css"/>
-        <link rel="stylesheet" href="html/bootstrap-dialog/bootstrap-dialog.min.css"/>
-        <link rel="stylesheet" href="html/css/theme.css"/>
+        <link rel="stylesheet" type="text/css" href="html/bootstrap/css/bootstrap.min.css"/>
+        <link rel="stylesheet" type="text/css" href="html/font-awesome/css/font-awesome.min.css"  />
+        <link rel="stylesheet" type="text/css" href="html/bootstrap/css/bootstrap-theme.min.css"/>
+        <link rel="stylesheet" type="text/css" href="html/bootstrap-dialog/bootstrap-dialog.min.css"/>
+        <link rel="stylesheet" type="text/css" href="html/SRDatatable/style.css"/>
+        <link rel="stylesheet" type="text/css" href="html/css/theme.css"/>
+        
         
         <script src="html/js/jquery-3.1.1.js" type="text/javascript"></script>
-        <script src="html/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-        <script src="html/bootstrap-datatable/jquery.dataTables.min.js" type="text/javascript"></script>
-        <script src="html/bootstrap-datatable/dataTables.bootstrap.min.js" type="text/javascript"></script>
+        <script src="html/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>        
         <script src="html/bootstrap-dialog/bootstrap-dialog.min.js" type="text/javascript"></script>
+        <script src="html/SRDatatable/script.js?1" type="text/javascript"></script>
+        <script src="html/js/jquery-extend.js?17" type="text/javascript"></script>
         <script src="html/sortable/jquery.sortable.min.js" type="text/javascript"></script>
-        
-        <script src="html/js/jquery-extend.js" type="text/javascript"></script>
         
         <style>
             .page-header
@@ -80,9 +82,7 @@ if (SQL_LOCAL_CHANGE_ENABLE)
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <li class="<?= $load_file == "index.php" ? "active" : "" ?>"><a href="<?= config::url("index") ?>">Home</a></li>
-                        <?php if (SQL_LOCAL_CHANGE_ENABLE): ?>
-                            <li class="<?= $load_file == "fetch_query.php" ? "active" : "" ?>"><a href="<?= config::url("fetch_query") ?>">Local Database Changes</a></li>
-                        <?php endif; ?>
+                        <li class="<?= $load_file == "fetch_query.php" ? "active" : "" ?>"><a href="<?= config::url("fetch_query") ?>">Local Database Changes</a></li>
                         <li class="<?= $load_file == "other_develop_query.php" ? "active" : "" ?>"><a href="<?= config::url("other_develop_query") ?>">Non Sync</a></li>
                     </ul>
                 </div>
@@ -118,4 +118,10 @@ if (SQL_LOCAL_CHANGE_ENABLE)
             <?php include_once "html/$load_file"; ?>
         </div>
     </body>
+    <script type="text/javascript">
+        $(document).ready(function ()
+        {
+            $(".sr-databtable").srDatatable();
+        })
+    </script>
 </html>

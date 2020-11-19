@@ -23,7 +23,7 @@ class DateUtility
     const WEEKS = "weeks";
     const DAYS = "days";
     const HOURS = "hours";
-    const MINTUES = "mintues";    
+    const MINTUES = "minutes";    
     const SECONDS = "seconds";
 
     /**
@@ -266,6 +266,34 @@ class DateUtility
                 }
             }
 
+            $start_date = self::change($start_date, 1);
+
+            $diff_days--;
+        }
+
+        return $list;
+    }
+    
+    /**
+     * return month list between two dates
+     * 
+     * @param String $start_date
+     * @param String $end_date
+     * @return type
+     */
+    public static function getMonthListBetweenTwoDates($start_date, $end_date)
+    {
+        $list = array();
+
+        $diff_days = self::diff($start_date, $end_date, self::DAYS);
+        
+        while($diff_days >= 0)
+        {
+            $year = self::get($start_date, "Y");
+            $month = self::get($start_date, "m");
+
+            $list[$year][$month] = $month;
+                
             $start_date = self::change($start_date, 1);
 
             $diff_days--;

@@ -1,13 +1,13 @@
 <div class="page-header">
     <h1>List of Executed Queries</h1>
 </div>
-<table class="table table-bordered">
+<table class="table table-bordered sr-databtable">
     <thead>
         <tr>
-            <th>#</th>
-            <th>Developer</th>            
-            <th>Query</th>
-            <th style="width: 10%">Datetime</th>
+            <th data-search-clear="1" style="width: 10%">#</th>
+            <th data-search="1" data-sort="alpha">Developer</th>            
+            <th data-search="1">Query</th>
+            <th style="width: 150px;" data-search="1" data-sort="alpha">Datetime</th>
         </tr>
     </thead>
     <tbody>
@@ -21,12 +21,3 @@
         <?php endforeach; ?>
     </tbody>
 </table>
-<script type="text/javascript">
-    $(document).ready(function() 
-    {
-        $('.table-bordered').DataTable({
-            "order": [[ 0, "desc" ]],
-            "pageLength": 50
-        });
-    });
-</script>

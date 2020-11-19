@@ -1,0 +1,78 @@
+/*
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+*/
+/* 
+    Created on : Dec 12, 2018, 2:31:53 PM
+    Author     : abc
+*/
+
+.sr-data-table
+{
+    
+}
+
+.sr-data-table th
+{
+    position: relative;
+    overflow: hidden;
+}
+
+.sr-data-table th .search-block
+{
+    width : 96%;
+    position: absolute;
+    top : 50%;
+    right: -100%;
+    transform : translateY(-50%);
+    transition: .1s;
+    opacity: 0.85;
+}
+
+.sr-data-table th .sort-direction
+{
+    margin-left: 8px; 
+    cursor: pointer;
+}
+
+.sr-data-table th .search-block input[type='text']
+{
+    width : 100%;
+    padding : 6px 8px;
+    border: 1px solid #3174AF;
+    color : #000;
+}
+
+.sr-data-table th .icon-search,
+.sr-data-table th .icon-search-clear
+{
+    position: absolute;
+    top : 50%;
+    right : 5px;
+    transform : translateY(-50%);
+    font-size: 16px;
+    padding : 8px;
+    color : #FFF;
+    background-color: #ccccff;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.sr-data-table th .icon-search-clear
+{
+    background-color:#E08283;
+}
+
+.sr-data-table th .icon-search.active
+{
+    background-color: #364150;
+}
+
+.sr-data-table th .icon-search:hover + .search-block, .sr-data-table th .search-block:hover, .sr-data-table th .search-block:focus-within{
+    right : 4px;
+}
+
+.sr-hidden{
+    display: none;
+}

@@ -16,12 +16,13 @@
 </div>
 
 
-<table class="table table-bordered">
+<table class="table table-bordered sr-databtable">
     <thead>
         <tr>
             <th><input type="checkbox"  class="chk-select-all" data-href=".chk-child"></th>
-            <th>#</th>
-            <th>Query</th>         
+            <th data-search-clear="1" style="width: 8%; text-align: center;">#</th>
+            <th data-search="1">Query</th>         
+            <th data-search="1" data-sort="alpha" style="width: 170px; text-align: center;">DateTime</th>
         </tr>
     </thead>
     <tbody>
@@ -30,20 +31,20 @@
                 $a++; 
         ?>
         <tr>
-            <td>                
-                <input type="hidden" name="log[<?= $log["id"] ?>][id]" value="<?= $log["id"] ?>" />
-                <input type="hidden" name="log[<?= $log["id"] ?>][datetime]" value="<?= $log["datetime"] ?>" />
-                <input type="hidden" name="log[<?= $log["id"] ?>][query]" value="<?= $log["query"] ?>" />
-                <input type="checkbox" class="chk-child" name="log[<?= $log["id"] ?>][will_execute]" value="1" />
+            <td>
+                <input type="hidden" name="data[<?= $k ?>][id]" value="<?= $log['id'] ?>" />
+                <input type="hidden" name="data[<?= $k ?>][query]" value="<?= $log['query'] ?>" />
+                <input type="hidden" name="data[<?= $k ?>][datetime]" value="<?= $log['datetime'] ?>" />
+                <input type="checkbox" class="chk-child" name="data[<?= $k ?>][will_execute]" value="1" />
             </td>
-            <td><?= $a ?></td>
+            <td style="text-align: center;"><?= $a ?></td>
             <td><?= $log['query'] ?></td>
+            <td style="text-align: center;"><?= $log['datetime'] ?></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
-</form>
-
+    
 <script type="text/javascript">
     $(".submit").click(function()
     {

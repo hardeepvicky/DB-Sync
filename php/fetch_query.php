@@ -1,20 +1,43 @@
 <?php 
-if (!empty($_POST) && isset($_GET['write_query_to_csv']))
+if (isset($_GET['write_query_to_csv']))
 {
-    $logs = $_POST['log'];
+    $data = $_POST['data'];
     
-    foreach($logs as $k => $log)
+    $max_datetime = false;
+    
+    foreach($data as $k => $log)
     {
-        if(!isset($log["will_execute"]))
+        if (!isset($log["will_execute"]))
         {
             $log["will_execute"] = 0;
         }
         
-        $logs[$k] = $log;
+        if ($max_datetime === false)
+        {
+            $max_datetime = $log["datetime"];
+        }
+        else if (DateUtility::compare($log["datetime"], $max_datetime) > 0)
+        {
+            $max_datetime = DateUtility::getDate($log["datetime"], DateUtility::DATETIME_FORMAT);
+        }
+        
+        $logs[$k] = array(
+            "id" => $log["id"],
+            "datetime" => $log["datetime"],
+            "query" => $log["query"],
+            "will_execute" => $log["will_execute"],
+        );
     }
     
     if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
     {
+        $sync_log_utility = new CsvUtility(SYNC_LOG_FILE);
+        $count = $sync_log_utility->update("last_sync_datetime", $max_datetime, ["name" => DEVELOPER]);                
+        if ($count == 0)
+        {
+            $count = $sync_log_utility->insert(["name" => DEVELOPER, "last_sync_datetime" => $max_datetime]);            
+        }
+        
         Session::writeFlash("success", "Queries are wrtten to " . DEVELOPER . ".csv File");
     }
     else
@@ -100,20 +123,15 @@ if (isset(config::$dml_tables) && !empty(config::$dml_tables))
     );
 }
 
-$sync_data = CsvUtility::fetchCSV(SYNC_DEVELOPER_FILE);
+$sync_log_utility = new CsvUtility(SYNC_LOG_FILE);
+$sync_log = $sync_log_utility->find("last_sync_datetime", ["name" => DEVELOPER]);
 
-if ($sync_data == false)
+$last_sync = false;
+$last_sync_on = "";
+if($sync_log)
 {
-    $sync_data = array();
-}
-
-$last_sync = end($sync_data);
-
-$last_sync_on = false;
-if($last_sync)
-{
-    $last_sync_on = $last_sync['datetime'];
-    
+    $last_sync = TRUE;
+    $last_sync_on = $sync_log[1]['last_sync_datetime'];
     $conditions["AND"][] = array(
         "field" => "event_time",
         "op" => ">",
@@ -121,7 +139,7 @@ if($last_sync)
     );
 }
 
-$where = get_where($conditions);    
+$where = get_where($conditions);   
 
 $q = "SELECT event_time, argument FROM mysql.general_log where $where order by event_time ASC;";
 $logs = $mysql->select($q);
@@ -130,16 +148,33 @@ $current_db_set_default = false;
 $db = config::$database['database'];
 //debug($logs); exit;
 $sp_list = $view_list = $function_list = array();
+$str_to_replace = array(
+    "SQL SECURITY DEFINER", 
+    "ALGORITHM=UNDEFINED", "ALGORITHM =UNDEFINED", "ALGORITHM= UNDEFINED", "ALGORITHM = UNDEFINED",
+    "DEFINER=`root`@`localhost`","DEFINER =`root`@`localhost`","DEFINER= `root`@`localhost`","DEFINER = `root`@`localhost`",
+);
+    
 foreach($logs as $k => $log)
 {
-    $log['argument'] = trim(preg_replace('/\s+/', ' ', $log['argument']));
+    $ddl_type = "";
     $arg = $log['argument'];
     
-    $arg_temp = str_replace("`", "", $arg);
+    $arg = trim(preg_replace('/\s+/', ' ', $arg));
+    foreach($str_to_replace as $rep_str)
+    {
+        $pos = strpos($arg, $rep_str);
+        if ($pos !== false)
+        {
+            $arg = str_replace(substr($arg, $pos, strlen($rep_str)), "", $arg);
+        }
+    }
+    
+    $arg = trim(preg_replace('/\s+/', ' ', $arg));
+    $arg_temp = strtoupper(str_replace("`", "", $arg));
     
     if (str_contain($arg_temp, "USE", 0, strlen("USE")))
     {
-        if ($arg_temp == "USE $db")
+        if ($arg_temp == "USE " . strtoupper($db))
         {
             $current_db_set_default = true;
         }
@@ -154,7 +189,6 @@ foreach($logs as $k => $log)
     else
     {
         $ddl_type = $continue = get_DDL_query_type($arg_temp, $db, $current_db_set_default == false ? true : false);
-        
         if (isset(config::$dml_tables) && !empty(config::$dml_tables))
         {   
             foreach(config::$dml_tables as $t)
@@ -171,56 +205,44 @@ foreach($logs as $k => $log)
             unset($logs[$k]);
             continue;
         }
-        
-        if (str_contain($ddl_type, "PROCEDURE") || str_contain($ddl_type, "FUNCTION") || str_contain($ddl_type, "VIEW"))
-        {
-            $arg = str_replace("DEFINER=`root`@`localhost`", "", $arg);
-            $arg = str_replace("DEFINER= `root`@`localhost`", "", $arg);
-            $arg = str_replace("DEFINER =`root`@`localhost`", "", $arg);
-            $arg = str_replace("SQL SECURITY DEFINER", "", $arg);
-            $arg = str_replace("ALGORITHM=UNDEFINED", "", $arg);
-            $arg = str_replace("ALGORITHM= UNDEFINED", "", $arg);
-            $arg = str_replace("ALGORITHM = UNDEFINED", "", $arg);
-        }
     }
     
     $arg = str_replace("`$db`.", "", $arg);
     $arg = str_replace("$db.", "", $arg);
     
-    $arg = trim(preg_replace('/\s+/', ' ', $arg));
-    
     $log['argument'] = $arg;
     
     if (str_contain($ddl_type, "PROCEDURE") || str_contain($ddl_type, "FUNCTION") || str_contain($ddl_type, "VIEW"))
     {
-        $temp_arg = str_replace("IF EXISTS", "", $arg);
-        $temp_arg = trim(preg_replace('/\s+/', ' ', $temp_arg));
+        $arg_temp = str_replace("IF EXISTS", "", $arg_temp);
         unset($logs[$k]);
         
         if (str_contain($ddl_type, "PROCEDURE"))
         {
-            $name = get_name_from_ddl_sql($temp_arg, $ddl_type);
-
+            $name = get_name_from_ddl_sql($arg_temp, $ddl_type);
             if ($name)
             {
+                $name = str_replace("$db.", "", $name);
                 $sp_list[$name][$ddl_type] = $log;
             }
         }
         else if (str_contain($ddl_type, "FUNCTION"))
         {
-            $name = get_name_from_ddl_sql($temp_arg, $ddl_type);
+            $name = get_name_from_ddl_sql($arg_temp, $ddl_type);
 
             if ($name)
             {
+                $name = str_replace("$db.", "", $name);
                 $function_list[$name][$ddl_type] = $log;
             }
         }
         else if (str_contain($ddl_type, "VIEW"))
         {
-            $name = get_name_from_ddl_sql($temp_arg, $ddl_type);
+            $name = get_name_from_ddl_sql($arg_temp, $ddl_type);
 
             if ($name)
             {
+                $name = str_replace("$db.", "", $name);
                 $view_list[$name][$ddl_type] = $log;
             }            
         }
@@ -231,47 +253,24 @@ foreach($logs as $k => $log)
     }
 }
 
-foreach($sp_list as $name => $ddl_types)
-{
-    if (isset($ddl_types['DROP PROCEDURE']))
-    {
-        $logs[] = $ddl_types['DROP PROCEDURE'];
-    }
-    
-    if (isset($ddl_types['CREATE PROCEDURE']))
-    {
-        $logs[] = $ddl_types['CREATE PROCEDURE'];
-    }
-}
+$routines = $sp_list + $view_list + $function_list;
 
-foreach($view_list as $name => $ddl_types)
+usort($routines, function ($a, $b)
 {
-    if (isset($ddl_types['DROP VIEW']))
-    {
-        $logs[] = $ddl_types['DROP VIEW'];
-    }
+    $a_first = reset($a);
+    $b_first = reset($b);
     
-    if (isset($ddl_types['CREATE VIEW']))
-    {
-        $logs[] = $ddl_types['CREATE VIEW'];
-    }
+    $a_time = strtotime($a_first["event_time"]);
+    $b_time = strtotime($a_first["event_time"]);
     
-    if (isset($ddl_types['CREATE OR REPLACE']))
-    {
-        $logs[] = $ddl_types['CREATE OR REPLACE'];
-    }
-}
+    return $a_time < $b_time ? 1 : $a_time > $b_time ? -1 : 0;
+});
 
-foreach($function_list as $name => $ddl_types)
+foreach($routines as $name => $arr)
 {
-    if (isset($ddl_types['DROP FUNCTION']))
+    foreach($arr as $inner_arr)
     {
-        $logs[] = $ddl_types['DROP FUNCTION'];
-    }
-    
-    if (isset($ddl_types['CREATE FUNCTION']))
-    {
-        $logs[] = $ddl_types['CREATE FUNCTION'];
+        $logs[] = $inner_arr;
     }
 }
 

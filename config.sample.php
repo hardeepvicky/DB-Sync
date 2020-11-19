@@ -5,8 +5,9 @@ define("DEVELOPER", 'hardeep');
 define("BASE_PATH", '.sync/');
 
 define("SYNC_FILE", BASE_PATH . "sync.csv");
-
+define("SYNC_LOG_FILE", BASE_PATH . "sync_log.csv");
 define("SYNC_DEVELOPER_FILE", BASE_PATH . "developers/" . DEVELOPER . ".csv");
+
 
 define("SQL_LOCAL_CHANGE_ENABLE", true);
 

@@ -115,37 +115,50 @@ function get_DDL_query_type($query, $db, $db_required)
     }
     
     $q = substr($query, 0, strpos($query, "AS"));
-    if ((
-            str_contain($q, "CREATE", 0, strlen('CREATE')) 
-            || str_contain($q, "ALTER", 0, strlen('ALTER'))
-        ) 
-            && str_contain($q, "VIEW")
-      )
+    if (str_contain($q, "VIEW"))
     {
-        if ($db_required)
+        $result = "";
+        
+        if (str_contain($q, "CREATE OR REPLACE", 0, strlen('CREATE OR REPLACE')))
         {
-            if (str_contain($q, "$db."))
+            $result = "CREATE OR REPLACE";
+        }
+        else if (str_contain($q, "CREATE VIEW", 0, strlen('CREATE VIEW')))
+        {
+            $result = "CREATE VIEW";
+        }
+        else if (str_contain($q, "ALTER VIEW", 0, strlen('ALTER VIEW')))
+        {
+            $result = "ALTER VIEW";
+        }
+
+        if ($result)
+        {
+            if ($db_required)
             {
-                return "VIEW";
+                if (str_contain($q, "$db."))
+                {
+                    return $result;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                return false;
+                return $result;
             }
-        }
-        else
-        {
-            return "VIEW";
         }
     }
     
-     if (str_contain($query, "DROP VIEW", 0, strlen('DROP VIEW')))
+    if (str_contain($query, "DROP VIEW", 0, strlen('DROP VIEW')))
     {
         if ($db_required)
         {
             if (str_contain($query, "$db."))
             {
-                return "VIEW";
+                return "DROP VIEW";
             }
             else
             {
@@ -154,32 +167,42 @@ function get_DDL_query_type($query, $db, $db_required)
         }
         else
         {
-            return "VIEW";
+            return "DROP VIEW";
         }
     }
     
     $q = substr($query, 0, strpos($query, "BEGIN"));
-    if ((
-            str_contain($q, "CREATE", 0, strlen('CREATE')) 
-            || str_contain($q, "ALTER", 0, strlen('ALTER'))
-        ) 
-            && str_contain($q, "PROCEDURE")
-      )
+    if (str_contain($q, "PROCEDURE"))
     {
-        if ($db_required)
+        $result = "";
+        
+        if (str_contain($q, "CREATE", 0, strlen('CREATE')))
         {
-            if (str_contain($q, "$db."))
+            $result = "CREATE PROCEDURE";
+        }
+        
+        if (str_contain($q, "ALTER", 0, strlen('ALTER')))
+        {
+            $result = "ALTER PROCEDURE";
+        }
+        
+        if ($result)
+        {
+            if ($db_required)
             {
-                return "PROCEDURE";
+                if (str_contain($q, "$db."))
+                {
+                    return $result;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                return false;
+                return $result;
             }
-        }
-        else
-        {
-            return "PROCEDURE";
         }
     }
     
@@ -189,7 +212,7 @@ function get_DDL_query_type($query, $db, $db_required)
         {
             if (str_contain($query, "$db."))
             {
-                return "PROCEDURE";
+                return "DROP PROCEDURE";
             }
             else
             {
@@ -198,32 +221,42 @@ function get_DDL_query_type($query, $db, $db_required)
         }
         else
         {
-            return "PROCEDURE";
+            return "DROP PROCEDURE";
         }
     }
     
     $q = substr($query, 0, strpos($query, "RETURNS"));
-    if ((
-            str_contain($q, "CREATE", 0, strlen('CREATE')) 
-            || str_contain($q, "ALTER", 0, strlen('ALTER'))
-        ) 
-            && str_contain($q, "FUNCTION")
-      )
+    if (str_contain($q, "FUNCTION"))
     {
-        if ($db_required)
+        $result = "";
+        
+        if (str_contain($q, "CREATE FUNCTION", 0, strlen('CREATE FUNCTION')))
         {
-            if (str_contain($q, "$db."))
+            $result = "CREATE FUNCTION";
+        }
+        
+        if (str_contain($q, "ALTER FUNCTION", 0, strlen('ALTER FUNCTION')))
+        {
+            $result = "ALTER FUNCTION";
+        }
+        
+        if ($result)
+        {
+            if ($db_required)
             {
-                return "FUNCTION";
+                if (str_contain($q, "$db."))
+                {
+                    return $result;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {
-                return false;
+                return $result;
             }
-        }
-        else
-        {
-            return "FUNCTION";
         }
     }
     
@@ -233,7 +266,7 @@ function get_DDL_query_type($query, $db, $db_required)
         {
             if (str_contain($query, "$db."))
             {
-                return "FUNCTION";
+                return "DROP FUNCTION";
             }
             else
             {
@@ -242,7 +275,7 @@ function get_DDL_query_type($query, $db, $db_required)
         }
         else
         {
-            return "FUNCTION";
+            return "DROP FUNCTION";
         }
     }
     
@@ -329,20 +362,62 @@ function git_version($path)
     return strtolower(trim($branchname));
 }
 
-//$arg = "CREATE TABLE `test_schema`.`users` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `email` VARCHAR(45) NOT NULL, `password` VARCHAR(45) NOT NULL, `created` DATETIME NOT NULL, PRIMARY KEY (`id`))";
-//        
-//debug([
-//    $arg,
-//    "CREATE TABLE" => [
-//        str_contain($arg, "CREATE TABLE") ? "contain" : "not-contain",
-//        "with database name" => str_contain($arg, "CREATE TABLE `" . config::$database['database'] . "`.") ? "contain" : "not-contain"
-//    ],
-//    "DROP PROCEDURE" => [
-//        str_contain($arg, "DROP PROCEDURE") ? "contain" : "not-contain",
-//        "with database name" => str_contain($arg, "DROP PROCEDURE `" . config::$database['database'] . "`.") ? "contain" : "not-contain"
-//    ],
-//    "CREATE OR REPLACE VIEW" => str_contain($arg, "CREATE OR REPLACE VIEW")  ? "contain" : "not-contain",
-//    "CREATE PROCEDURE" => str_contain($arg, "CREATE PROCEDURE") ? "contain" : "not-contain"
-//]);
-//
-//exit;
+function get_name_from_ddl_sql($query, $ddl_type)
+{
+    $find = $ddl_type;
+    $name = "";
+    
+    switch($ddl_type)
+    {
+        case "CREATE PROCEDURE":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+                $name = substr($name, 0, strpos($name, "("));
+            }
+            break;
+        case "DROP PROCEDURE":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+            }
+            break;
+            
+        case "CREATE FUNCTION":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+                $name = substr($name, 0, strpos($name, "("));
+            }
+            break;
+        case "DROP FUNCTION":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+            }
+            break;
+            
+        case "CREATE VIEW":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+                $name = substr($name, 0, strpos($name, "AS"));
+            }
+            break;
+        case "CREATE OR REPLACE":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+                $name = substr($name, 0, strpos($name, "AS"));
+            }
+            break;
+        case "DROP VIEW":
+            if (str_contain($query, $find, 0, strlen($find)))
+            {
+                $name = substr($query, strlen($find));
+            }
+            break;
+    }
+    
+    return strtolower(trim($name));
+}

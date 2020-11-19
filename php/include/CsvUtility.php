@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @created    22/04/2015
  * @package    Badge
@@ -8,13 +9,14 @@
  */
 class CsvUtility
 {
+
     public $file;
-    
+
     public function __construct($file)
     {
         $this->file = $file;
     }
-    
+
     public function find($fields = array(), $conditions = array())
     {
         $data = self::fetchCSV($this->file);
@@ -22,18 +24,18 @@ class CsvUtility
         {
             return array();
         }
-        
+
         if ($conditions)
         {
             $i = 0;
-            foreach($data as $k => $row)
+            foreach ($data as $k => $row)
             {
                 if ($i == 0)
                 {
                     $headers = array_keys($row);
                 }
-                
-                foreach($conditions as $field => $val)
+
+                foreach ($conditions as $field => $val)
                 {
                     if (in_array($field, $headers))
                     {
@@ -46,65 +48,150 @@ class CsvUtility
                         }
                         else
                         {
-                            if ($row[$field] != $val)
+                            if ($row[$field] == $val)
+                            {
+                                if (!empty($fields) && is_array($fields))
+                                {
+                                    foreach($row as $f => $v)
+                                    {
+                                        if ( !in_array($f, $fields) )
+                                        {
+                                            unset($data[$k][$k]);
+                                        }
+                                    }
+                                }
+                            }
+                            else
                             {
                                 unset($data[$k]);
                             }
                         }
                     }
                 }
-                
+
                 $i++;
             }
         }
-        
+
         return $data;
     }
     
-    public static function fetchCSV($filename, $header = true, $delimiter = ',') 
+    public function update($field, $value, $conditions)
     {
-        if (!file_exists($filename) || !is_readable($filename)) 
+        $update_row_count = 0;
+        $data = self::fetchCSV($this->file);
+        
+        if ($data)
+        {
+            foreach($data as $k => $arr)
+            {
+                foreach($arr as $f => $v)
+                {
+                    if (isset($conditions[$f]) && isset($arr[$field]))
+                    {
+                        if ($conditions[$f] == $v)
+                        {
+                            $arr[$field] = $value;
+                            $update_row_count++;
+                        }
+                    }
+                }
+
+                $data[$k] = $arr;
+            }
+
+            self::writeCSV($this->file, $data, true);
+        }
+        
+        return $update_row_count;
+    }
+    
+    public function insert($save)
+    {
+        $data = self::fetchCSV($this->file);
+        if ($data === false)
+        {
+            $data = [];
+        }
+        
+        if (count($data) > 0)
+        {
+            $first = reset($data);
+
+            $record = [];
+            $save_field_count = 0;
+            foreach($first as $f => $v)
+            {
+                if ( isset( $save[$f] ))
+                {
+                    $record[$f] = $save[$f];
+                    $save_field_count++;
+                }
+                else
+                {
+                    $record[$f] = "";
+                }
+            }
+        }
+        else
+        {
+            $save_field_count = count($save);
+            $record = $save;
+        }
+        
+        if ($save_field_count > 0)
+        {
+            $data[] = $record;
+            self::writeCSV($this->file, $data, true);
+        }
+        
+        return $save_field_count;
+    }
+
+    public static function fetchCSV($filename, $header = true, $delimiter = ',')
+    {
+        if (!file_exists($filename) || !is_readable($filename))
         {
             return FALSE;
         }
         $data = array();
         $header_data = array();
 
-        if (($handle = fopen($filename, 'r')) !== FALSE) 
+        if (($handle = fopen($filename, 'r')) !== FALSE)
         {
             $r = 0;
-            while (($row = fgetcsv($handle, 0, $delimiter)) !== FALSE) 
+            while (($row = fgetcsv($handle, 0, $delimiter)) !== FALSE)
             {
-                foreach($row as $k  => $v)
+                foreach ($row as $k => $v)
                 {
-                    $row[$k] = utf8_encode($v);
+                    $row[$k] = utf8_encode(trim($v));
                 }
-                
-                if ($header && $r == 0) 
+
+                if ($header && $r == 0)
                 {
-                    $header_data = $row;               
-                } 
-                else 
+                    $header_data = $row;
+                }
+                else
                 {
                     if ($header)
                     {
-						$insert = false;
-						
-						foreach($row as $key => $val)
-						{
-							if (trim($val))
-							{
-								$insert = true;
-							}
-						}
-						
-						if ($insert)
-						{
-							for($i = 0; $i < count ($row); $i++)
-							{	
-								$data[$r][$header_data[$i]] = $row[$i];
-							}
-						}
+                        $insert = false;
+
+                        foreach ($row as $key => $val)
+                        {
+                            if (trim($val))
+                            {
+                                $insert = true;
+                            }
+                        }
+
+                        if ($insert)
+                        {
+                            for ($i = 0; $i < count($row); $i++)
+                            {
+                                $data[$r][$header_data[$i]] = $row[$i];
+                            }
+                        }
                     }
                     else
                     {
@@ -118,35 +205,41 @@ class CsvUtility
         return $data;
     }
 
-    public static function writeCSV($file, $data, $key_as_header = false, $delimeter = ',', $mode = "w") 
+    public static function writeCSV($file, $data, $key_as_header = false, $delimeter = ',', $mode = "w")
     {
         $print_header = !file_exists($file) || ($mode != "a" && $mode != "a+");
-        
+
         $handle = fopen($file, $mode);
-        if ($handle) 
+        if ($handle)
         {
             if ($key_as_header)
             {
-                $headers = array_values($data);
-                $headers = array_keys($headers[0]);
-                if ($print_header)
+                if (count($data) > 0)
                 {
-                    fputcsv($handle, $headers, $delimeter);
+                    $headers = array_values($data);
+                    if ( count($headers) > 0)
+                    {
+                        $headers = array_keys($headers[0]);
+                        if ($print_header)
+                        {
+                            fputcsv($handle, $headers, $delimeter);
+                        }
+                    }
                 }
             }
             else
             {
                 $temp = $data;
-                if (isset($temp['header']) && !empty($temp['header'])) 
+                if (isset($temp['header']) && !empty($temp['header']))
                 {
                     $headers = array_keys($temp['header']);
-                    
+
                     if ($print_header)
                     {
                         $data = array(
                             0 => $temp['header']
-                        );       
-                        
+                        );
+
                         $data = array_merge($data, $temp['data']);
                     }
                     else
@@ -159,13 +252,13 @@ class CsvUtility
                     $data = $temp['data'];
                 }
             }
-            
-            foreach ($data as $line) 
+
+            foreach ($data as $line)
             {
                 $row = array();
                 if (isset($headers) && $headers)
                 {
-                    foreach($headers as $field)
+                    foreach ($headers as $field)
                     {
                         $row[$field] = $line[$field];
                     }
@@ -174,18 +267,19 @@ class CsvUtility
                 {
                     $row = $line;
                 }
-                
+
                 fputcsv($handle, $row, $delimeter);
             }
-            
+
             fclose($handle);
-            chmod($file, 0777);  
-            
+            chmod($file, 0777);
+
             return true;
         }
         else
         {
-            return false; 
+            return false;
         }
     }
+
 }
