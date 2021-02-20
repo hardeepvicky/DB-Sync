@@ -1,0 +1,6 @@
+id,datetime,query,will_execute
+1,"2021-02-20 11:54:16","CREATE TABLE `pincodes` ( `id` INT UNSIGNED NOT NULL AUTO_INCREMENT, `city_id` INT UNSIGNED NOT NULL, `name` VARCHAR(45) NOT NULL, `created` DATETIME NOT NULL, `created_by` INT UNSIGNED NOT NULL, PRIMARY KEY (`id`))",1
+2,"2021-02-20 12:05:16","ALTER TABLE `pincodes` ADD COLUMN `modified` DATETIME NOT NULL AFTER `created_by`, ADD COLUMN `modified_by` INT UNSIGNED NOT NULL AFTER `modified`",1
+3,"2021-02-20 12:09:28","CREATE OR REPLACE VIEW `view_pincodes` AS SELECT * FROM pincodes",1
+4,"2021-02-20 12:09:35","ALTER TABLE `pincodes` CHANGE COLUMN `created_by` `created_by` INT(10) NOT NULL , CHANGE COLUMN `modified_by` `modified_by` INT(10) NOT NULL",1
+5,"2021-02-20 12:17:31","CREATE OR REPLACE VIEW `view_pincodes` AS SELECT `pincodes`.`id` AS `id`, `pincodes`.`city_id` AS `city_id`, `pincodes`.`name` AS `name` FROM `pincodes`",1

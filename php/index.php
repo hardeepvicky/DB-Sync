@@ -1,6 +1,10 @@
 <?php 
-$file = new CsvUtility(SYNC_FILE);
-$sync_data = $file->find(array(), array("is_execute" => 1));
+$csv_utility = new csv\CsvUtility(SYNC_FILE);
+$csv_utility->setField("is_execute", csv\CsvDataType::BOOL);
+
+$where = new csv\CsvWhere("is_execute", "", "1");
+
+$sync_data = $csv_utility->find(array(), array($where));
 
 if ($sync_data == false)
 {

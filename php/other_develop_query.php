@@ -1,15 +1,27 @@
 <?php 
-$sync_data = CsvUtility::fetchCSV(SYNC_FILE);
-$last_sync = $last_sync_on = false;
+$sync_utility = new csv\CsvUtility(SYNC_FILE);
+$sync_utility->setField("datetime", csv\CsvDataType::DATETIME);
 
-if ($sync_data == false)
+$temp = $sync_utility->find();
+
+$last_sync_log = [];
+$last_sync_on = false;
+
+foreach($temp as $arr)
 {
-    $sync_data = array();
-}
-else
-{
-    $last_sync = end($sync_data);
-    $last_sync_on = $last_sync['datetime'];
+    $last_sync_log[$arr['developer']][] = $arr;
+    
+    if ($last_sync_on)
+    {
+        if (DateUtility::compare($arr['datetime'], $last_sync_on) > 0)
+        {
+            $last_sync_on = $arr['datetime'];
+        }
+    }
+    else
+    {
+        $last_sync_on = $arr['datetime'];
+    }
 }
 
 $non_sync_data = array();
@@ -26,29 +38,35 @@ foreach($developer_files as $k => $file)
     {
         $developer = pathinfo(BASE_PATH . "developers/" . $file, PATHINFO_FILENAME);
         
-        $data = CsvUtility::fetchCSV(BASE_PATH . "developers/" . $file);
+        $developer_utility = new csv\CsvUtility(BASE_PATH . "developers/" . $file);
+        $developer_data = $developer_utility->find();
+        
         $ret_data = array();
-        foreach($data as $k => $arr)
+        foreach($developer_data as $k => $developer_arr)
         {
             $found = false;
             
-            foreach($sync_data as $k => $sync_arr)
+            if ( isset($last_sync_log[$developer]) )
             {
-                if ($developer == $sync_arr['developer'] && $arr['id'] == $sync_arr['ref_id'])
+                foreach($last_sync_log[$developer] as $last_sync_arr)
                 {
-                    $found = true;
+                    if ($last_sync_arr["ref_id"] == $developer_arr["id"])
+                    {
+                        $found = true;
+                    }
                 }
             }
             
-            if ($found == FALSE && $arr["will_execute"] == 1)
+            if ($found == FALSE && $developer_arr["will_execute"] == 1)
             {
-                $ret_data[$arr['id']] = $arr;
+                $ret_data[$developer_arr['id']] = $developer_arr;
             }
         }
         
         $non_sync_data[$developer] = $ret_data;
     }
 }
+
 if (isset($_GET['sync_now']))
 {
     $post_data = $_POST['data'];

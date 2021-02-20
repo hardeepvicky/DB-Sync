@@ -34,22 +34,41 @@ if (isset($_GET['write_query_to_csv']))
         );
     }
     
-    if (CsvUtility::writeCSV(SYNC_DEVELOPER_FILE, $logs, true, ",", "a"))
+    try
     {
-        $sync_log_utility = new CsvUtility(FETCH_LOG_FILE);
-        $count = $sync_log_utility->update("last_sync_datetime", $max_datetime, ["name" => DEVELOPER]);
-        if ($count > 0)
-        {
-            $sync_log_utility->update("last_sync_id", $max_id, ["name" => DEVELOPER]);
-        }
-        else
-        {
-            $count = $sync_log_utility->insert(["name" => DEVELOPER, "last_sync_datetime" => $max_datetime, 'last_sync_id' => $max_id]);            
-        }
+        $fetch_developer_utility = new csv\CsvUtility(FETCH_DEVELOPER_FILE);
+        $fetch_developer_utility->write($logs, "a");
         
+        $fetch_utility = new csv\CsvUtility(FETCH_LOG_FILE);
+        $fetch_data = $fetch_utility->find();
+
+        $is_found = false;
+        if ($fetch_data)
+        {
+            foreach($fetch_data as $a => $arr)
+            {
+                if ($arr['name'] == DEVELOPER)
+                {
+                    $is_found = true;
+                    $fetch_data[$a]["last_sync_datetime"] = $max_datetime;
+                    $fetch_data[$a]["last_sync_id"] = $max_id;
+                }
+            }
+        }
+
+        if ( !$is_found )
+        {
+            $fetch_data[] = [
+                "name" => DEVELOPER,
+                "last_sync_datetime" => $max_datetime,
+                "last_sync_id" => $max_id
+            ];
+        }
+
+        $fetch_utility->write($fetch_data);
         Session::writeFlash("success", "Queries are wrtten to " . DEVELOPER . ".csv File");
     }
-    else
+    catch(Exception $ex)
     {
         Session::writeFlash("failure", "Failed to write Queries.");
     }
@@ -132,13 +151,15 @@ if (isset(config::$dml_tables) && !empty(config::$dml_tables))
     );
 }
 
-$sync_log_utility = new CsvUtility(SYNC_LOG_FILE);
-$sync_log = $sync_log_utility->find("last_sync_datetime", ["name" => DEVELOPER]);
+$fetch_log_utility = new csv\CsvUtility(FETCH_LOG_FILE);
+$where = new csv\CsvWhere("name", "", DEVELOPER);
+$fetch_log = $fetch_log_utility->find([], [$where]);
 
 $last_sync_on = "";
-if($sync_log)
+if($fetch_log)
 {
-    $last_sync_on = $sync_log[1]['last_sync_datetime'];
+    $fetch_log = reset($fetch_log);
+    $last_sync_on = $fetch_log['last_sync_datetime'];
     $conditions["AND"][] = array(
         "field" => "event_time",
         "op" => ">",
@@ -262,17 +283,6 @@ foreach($logs as $k => $log)
 
 $routines = $sp_list + $view_list + $function_list;
 
-usort($routines, function ($a, $b)
-{
-    $a_first = reset($a);
-    $b_first = reset($b);
-    
-    $a_time = strtotime($a_first["event_time"]);
-    $b_time = strtotime($a_first["event_time"]);
-    
-    return $a_time < $b_time ? 1 : $a_time > $b_time ? -1 : 0;
-});
-
 foreach($routines as $name => $arr)
 {
     foreach($arr as $inner_arr)
@@ -281,11 +291,19 @@ foreach($routines as $name => $arr)
     }
 }
 
+usort($logs, function ($a, $b)
+{
+    $a_time = strtotime($a["event_time"]);
+    $b_time = strtotime($b["event_time"]);
+    
+    return $a_time < $b_time ? -1 : $a_time > $b_time ? 1 : 0;
+});
+
 $id = 1;
 
-if ($sync_log && isset($sync_log[1]['last_sync_id']))
+if ($fetch_log && isset($fetch_log['last_sync_id']))
 {
-    $id = $sync_log[1]['last_sync_id'] + 1;
+    $id = $fetch_log['last_sync_id'] + 1;
 }
 
 foreach($logs as $k => $log)

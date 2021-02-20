@@ -1,5 +1,5 @@
 <?php
-define("BASE_URL", '/DB-Sync/');
+define("BASE_URL", 'http://localhost/library/DB-Sync/');
 $git = new GitUtility("D:/xampp/htdocs/library/DB-Sync");
 $branch_name = $git->getCurrentBranchName();
 define("DEVELOPER", 'vicky_' . $branch_name);
@@ -17,8 +17,8 @@ class config extends SharedConfig
     public static $database = array(
         "server" => "localhost",
         "username" => "root",
-        "password" => "password",
-        "database" => ""
+        "password" => "root",
+        "database" => "test2"
     );
     
     public static function init()
@@ -34,4 +34,4 @@ class config extends SharedConfig
 }
 
 //link to cakephp database file
-config::init();
+//config::init();

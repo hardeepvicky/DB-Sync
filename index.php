@@ -5,7 +5,7 @@ ini_set('max_execution_time', 60 * 60 * 30);
 require_once './php/include/functions.php';
 require_once './shared_config.php';
 require_once './php/include/GitUtility.php';
-require_once './config.php';
+require_once './config2.php';
 require_once './php/include/DateUtility.php';
 require_once './php/include/CsvUtility.php';
 require_once './php/include/FileUtility.php';
@@ -15,7 +15,7 @@ require_once './php/include/Session.php';
 
 if (!FileUtility::createFolder(BASE_PATH . "developers/"))
 {
-	die("failed to create path " . BASE_PATH . "developers/");
+    die("failed to create path " . BASE_PATH . "developers/");
 }
 
 chmod(BASE_PATH, 0777);
