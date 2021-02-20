@@ -4,3 +4,5 @@ id,datetime,query,will_execute
 3,"2021-02-20 12:09:28","CREATE OR REPLACE VIEW `view_pincodes` AS SELECT * FROM pincodes",1
 4,"2021-02-20 12:09:35","ALTER TABLE `pincodes` CHANGE COLUMN `created_by` `created_by` INT(10) NOT NULL , CHANGE COLUMN `modified_by` `modified_by` INT(10) NOT NULL",1
 5,"2021-02-20 12:17:31","CREATE OR REPLACE VIEW `view_pincodes` AS SELECT `pincodes`.`id` AS `id`, `pincodes`.`city_id` AS `city_id`, `pincodes`.`name` AS `name` FROM `pincodes`",1
+6,"2021-02-20 13:28:16","ALTER TABLE `pincodes` CHANGE COLUMN `created_by` `created_by` INT(10) NOT NULL , CHANGE COLUMN `modified_by` `modified_by` INT(10) NOT NULL",1
+7,"2021-02-20 13:28:26","CREATE OR REPLACE VIEW `view_pincodes` AS SELECT `p`.`id` AS `id`, `p`.`name` AS `pincode`, `c`.`name` AS `city` FROM (`pincodes` `p` JOIN `cities` `c` ON ((`c`.`id` = `p`.`city_id`)))",1

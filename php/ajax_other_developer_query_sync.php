@@ -22,19 +22,19 @@ if ($_POST['will_execute'])
     {
         if (!$mysql->query("SET GLOBAL general_log = 'OFF';"))
         {
-            throw new Exception(mysqli_error(Mysql::$conn));
+            die(mysqli_error(Mysql::$conn));
         }
     }
 
     if (!$mysql->query("USE $db;"))
     {
-        throw new Exception(mysqli_error(Mysql::$conn));
+        die(mysqli_error(Mysql::$conn));
     }
 
 
     if($mysql->query($developer_data["query"]) == false)
     {
-        throw new Exception(mysqli_error(Mysql::$conn));
+        die(mysqli_error(Mysql::$conn));
     }
 }
 
