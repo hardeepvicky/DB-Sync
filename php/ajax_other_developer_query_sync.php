@@ -18,19 +18,10 @@ if ($_POST['will_execute'])
 {
     $db = config::$database['database'];
             
-    if (SQL_LOCAL_CHANGE_ENABLE)
-    {
-        if (!$mysql->query("SET GLOBAL general_log = 'OFF';"))
-        {
-            die(mysqli_error(Mysql::$conn));
-        }
-    }
-
     if (!$mysql->query("USE $db;"))
     {
         die(mysqli_error(Mysql::$conn));
     }
-
 
     if($mysql->query($developer_data["query"]) == false)
     {

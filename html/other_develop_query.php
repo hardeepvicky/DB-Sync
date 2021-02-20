@@ -95,7 +95,7 @@ $(document).ready(function()
                         {
                             _tr.find(".result").html(response).addClass("alert-danger");
                         }
-                    }
+                    },
                     error: function (jqXHR, exception) 
                     {
                         var msg = '';
