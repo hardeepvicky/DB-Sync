@@ -72,23 +72,50 @@ $(document).ready(function()
             {
                 var url = '<?= Config::url("ajax_other_developer_query_sync") ?>';
                 
-                $.post(url, data, function(response)
-                {
-                    if (response == "1")
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    async: false, 
+                    data : data,
+                    success: function (response) 
                     {
-                        _tr.find(".result").addClass("alert-success");
-                        if (data.will_execute == "1")
+                        if (response == "1")
                         {
-                            _tr.find(".result").html("Run Successfully");
+                            _tr.find(".result").addClass("alert-success");
+                            if (data.will_execute == "1")
+                            {
+                                _tr.find(".result").html("Run Successfully");
+                            }
+                            else
+                            {
+                                _tr.find(".result").html("Ignored");
+                            }
                         }
                         else
                         {
-                            _tr.find(".result").html("Ignored");
+                            _tr.find(".result").html(response).addClass("alert-danger");
                         }
                     }
-                    else
+                    error: function (jqXHR, exception) 
                     {
-                        _tr.find(".result").html(response).addClass("alert-danger");
+                        var msg = '';
+                        if (jqXHR.status === 0) {
+                            msg = 'Not connect.\n Verify Network.';
+                        } else if (jqXHR.status == 404) {
+                            msg = 'Requested page not found. [404]';
+                        } else if (jqXHR.status == 500) {
+                            msg = 'Internal Server Error [500].';
+                        } else if (exception === 'parsererror') {
+                            msg = 'Requested JSON parse failed.';
+                        } else if (exception === 'timeout') {
+                            msg = 'Time out error.';
+                        } else if (exception === 'abort') {
+                            msg = 'Ajax request aborted.';
+                        } else {
+                            msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                        }
+                        
+                        _tr.find(".result").html(msg).addClass("alert-danger");
                     }
                 });
             }
