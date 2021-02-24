@@ -155,11 +155,23 @@ $fetch_log_utility = new csv\CsvUtility(FETCH_LOG_FILE);
 $where = new csv\CsvWhere("name", "", DEVELOPER);
 $fetch_log = $fetch_log_utility->find([], [$where]);
 
-$last_sync_on = "";
+$last_sync_on = FETCH_LAST_DATETIME;
 if($fetch_log)
 {
     $fetch_log = reset($fetch_log);
     $last_sync_on = $fetch_log['last_sync_datetime'];
+    
+    if (FETCH_LAST_DATETIME)
+    {
+        if (DateUtility::compare(FETCH_LAST_DATETIME, $last_sync_on) > 0)
+        {
+            $last_sync_on = FETCH_LAST_DATETIME;
+        }
+    }    
+}
+
+if ($last_sync_on)
+{
     $conditions["AND"][] = array(
         "field" => "event_time",
         "op" => ">",

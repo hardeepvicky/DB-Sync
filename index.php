@@ -18,8 +18,6 @@ if (!FileUtility::createFolder(BASE_PATH . "developers/"))
     die("failed to create path " . BASE_PATH . "developers/");
 }
 
-chmod(BASE_PATH, 0777);
-
 $mysql = new Mysql(config::$database['server'], config::$database['username'], config::$database['password'], config::$database['database']);
 
 if (empty(Mysql::$conn))

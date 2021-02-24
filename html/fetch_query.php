@@ -1,3 +1,16 @@
+<style>
+    .query_up, .query_down
+    {
+        background-color: #EEE;
+        border : 1px solid #CCC;
+        border-radius: 50%;
+        cursor: pointer;
+    }
+    .divider{
+        width : 100%;
+        margin: 5px 0;
+    }
+</style>
 <form method="POST" action="<?= config::url("fetch_query", array("write_query_to_csv" => 1)) ?>">
     
 <div class="page-header">
@@ -22,7 +35,7 @@
             <th><input type="checkbox"  class="chk-select-all" data-href=".chk-child"></th>
             <th data-search-clear="1" style="width: 8%; text-align: center;">#</th>
             <th data-search="1">Query</th>         
-            <th data-search="1" data-sort="alpha" style="width: 170px; text-align: center;">DateTime</th>
+            <th data-search="1" style="width: 170px; text-align: center;">DateTime</th>
         </tr>
     </thead>
     <tbody>
@@ -37,7 +50,16 @@
                 <input type="hidden" name="data[<?= $k ?>][datetime]" value="<?= $log['datetime'] ?>" />
                 <input type="checkbox" class="chk-child" name="data[<?= $k ?>][will_execute]" value="1" />
             </td>
-            <td style="text-align: center;"><?= $a ?></td>
+            <td style="text-align: center;">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="query_up"><i class="fa fa-arrow-up"></i></div>
+                        <div class="divider"><?= $a ?></div>
+                        <div class="query_down"><i class="fa fa-arrow-down"></i></div>
+                    </div>                    
+                </div>
+                
+            </td>
             <td><?= $log['query'] ?></td>
             <td style="text-align: center;"><?= $log['datetime'] ?></td>
         </tr>
@@ -66,5 +88,26 @@
     $(document).ready(function()
     {
         $(".chk-select-all").chkSelectAll();
+        
+        $(".query_up").click(function()
+        {
+            $(this).closest("table").find("td").css("border", "");
+            
+            var _tr = $(this).closest("tr");   
+            
+            _tr.find("td").css("border", "1px solid #337ab7");
+            
+            _tr.prev().insertAfter(_tr);
+        });
+        
+        $(".query_down").click(function()
+        {
+            $(this).closest("table").find("td").css("border", "");
+            
+            var _tr = $(this).closest("tr");
+            _tr.insertAfter( _tr.next() );
+            
+            _tr.find("td").css("border", "1px solid #337ab7");
+        });
     });
 </script>

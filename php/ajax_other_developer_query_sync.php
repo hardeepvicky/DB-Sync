@@ -7,37 +7,54 @@ $developer_utility->setField("id", csv\CsvDataType::NUMBER);
 $where = new csv\CsvWhere("id", "=", $_POST['id']);
 $developer_data = $developer_utility->find([], [$where]);
 
-if (empty($developer_data))
+try
 {
-    die("Invalid id : " . $_POST['id'] . " in " . $_POST['developer'] . ".csv" );
-}
-
-$developer_data = reset($developer_data);
-        
-if ($_POST['will_execute'])
-{
-    $db = config::$database['database'];
-            
-    if (!$mysql->query("USE $db;"))
+    if (empty($developer_data))
     {
-        die(mysqli_error(Mysql::$conn));
+        throw new Exception("Invalid id : " . $_POST['id'] . " in " . $_POST['developer'] . ".csv" );
     }
 
-    if($mysql->query($developer_data["query"]) == false)
+    $developer_data = reset($developer_data);
+
+    if ($_POST['will_execute'])
     {
-        die(mysqli_error(Mysql::$conn));
+        $db = config::$database['database'];
+
+        if (!$mysql->query("USE $db;"))
+        {
+            throw new Exception(mysqli_error(Mysql::$conn));
+        }
+
+        if (!$mysql->query("SET GLOBAL general_log = 'OFF';"))
+        {
+            throw new Exception(mysqli_error(Mysql::$conn));
+        }
+
+        if($mysql->query($developer_data["query"]) == false)
+        {
+            throw new Exception(mysqli_error(Mysql::$conn));
+        }
     }
+
+    $csv_data[] = array(
+        "ref_id" => $_POST['id'],
+        "developer" => $_POST['developer'],
+        "datetime" => $developer_data["datetime"],
+        "query" => $developer_data["query"],
+        "is_execute" => $_POST['will_execute']
+    );
+
+    $sync_utility = new csv\CsvUtility(SYNC_FILE);
+    $sync_utility->write($csv_data, "a");
+}
+catch(Exception $ex)
+{
+    echo $ex->getMessage();
 }
 
-$csv_data[] = array(
-    "ref_id" => $_POST['id'],
-    "developer" => $_POST['developer'],
-    "datetime" => $developer_data["datetime"],
-    "query" => $developer_data["query"],
-    "is_execute" => $_POST['will_execute']
-);
-
-$sync_utility = new csv\CsvUtility(SYNC_FILE);
-$sync_utility->write($csv_data, "a");
+if (!$mysql->query("SET GLOBAL general_log = 'ON';"))
+{
+    die(mysqli_error(Mysql::$conn));
+}
 
 echo 1; exit;

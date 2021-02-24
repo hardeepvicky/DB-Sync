@@ -27,8 +27,8 @@
         </tr>
     </thead>
     <tbody>
-        <?php $a = 0; foreach($non_sync_data as $developer => $data): ?>
-        <?php foreach($data as $arr):  $a++; ?>
+        <?php foreach($non_sync_data as $developer => $data): ?>
+        <?php foreach($data as $a => $arr):  ?>
             <tr>
                 <td style="text-align: center;">
                     <?= $a ?>
@@ -57,8 +57,32 @@ $(document).ready(function()
 {
     $("#sync_now").click(function()
     {
+        var is_syncing = $(this).attr("data-is_syncing");
+        
+        if (is_syncing == "1")
+        {
+            return ;
+        }
+        
+        var _this = $(this);
+        _this.attr("data-is_syncing", 1);
+        
+        var tc = 0;
+        $("#query_table tbody tr").not(".sr-hidden").each(function()
+        {
+            var will_execute = $(this).find("select.will_execute").val();
+            
+            if (will_execute == "1")
+            {
+                tc++;
+            }
+        });
+        
+        _this.html("Syncing 0/" + tc);
+        
         $("td.result").removeClass("alert-success alert-danger").html("");
         
+        var rc = 0;
         $("#query_table tbody tr").not(".sr-hidden").each(function()
         {
             var _tr = $(this);
@@ -70,6 +94,10 @@ $(document).ready(function()
             
             if (data.will_execute)
             {
+                _tr.find(".result").html("Running...");
+                rc++;
+                _this.html("Syncing " + rc  + "/" + tc);
+                
                 var url = '<?= Config::url("ajax_other_developer_query_sync") ?>';
                 
                 $.ajax({
@@ -90,6 +118,11 @@ $(document).ready(function()
                             {
                                 _tr.find(".result").html("Ignored");
                             }
+                            
+                            setTimeout(function()
+                            {
+                                _tr.remove();
+                            }, 2000);
                         }
                         else
                         {
@@ -120,6 +153,9 @@ $(document).ready(function()
                 });
             }
         });
+        
+        _this.attr("data-is_syncing", 0);
+        _this.html("Sync Now");
         
         return false;
     });
