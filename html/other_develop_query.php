@@ -55,6 +55,80 @@
 <script type="text/javascript">
 $(document).ready(function()
 {
+    var query_list = [];
+    
+    function query_exec(i)
+    {
+        if (i >= query_list.length)
+        {
+            $("#sync_now").attr("data-is_syncing", 0);
+            $("#sync_now").html("Sync Now");
+            return;
+        }
+        
+        var rc = i + 1;
+        var tc = query_list.length;
+        $("#sync_now").html("Syncing " + rc + "/" + tc);
+        
+        var query = query_list[i];
+        query.tr.find(".result").removeClass("alert-success alert-danger").html("Running...");
+        
+        var url = '<?= Config::url("ajax_other_developer_query_sync") ?>';
+        
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data : query.data,
+            success: function (response) 
+            {
+                if (response == "1")
+                {
+                    query.tr.find(".result").addClass("alert-success");
+                    if (query.data.will_execute == "1")
+                    {
+                        query.tr.find(".result").html("Run Successfully");
+                    }
+                    else
+                    {
+                        query.tr.find(".result").html("Ignored");
+                    }
+
+                    setTimeout(function()
+                    {
+                        query.tr.remove();
+                    }, 2000);
+                }
+                else
+                {
+                    query.tr.find(".result").html(response).addClass("alert-danger");
+                }
+                
+                query_exec(i + 1);
+            },
+            error: function (jqXHR, exception) 
+            {
+                var msg = '';
+                if (jqXHR.status === 0) {
+                    msg = 'Not connect.\n Verify Network.';
+                } else if (jqXHR.status == 404) {
+                    msg = 'Requested page not found. [404]';
+                } else if (jqXHR.status == 500) {
+                    msg = 'Internal Server Error [500].';
+                } else if (exception === 'parsererror') {
+                    msg = 'Requested JSON parse failed.';
+                } else if (exception === 'timeout') {
+                    msg = 'Time out error.';
+                } else if (exception === 'abort') {
+                    msg = 'Ajax request aborted.';
+                } else {
+                    msg = 'Uncaught Error.\n' + jqXHR.responseText;
+                }
+
+                query.tr.find(".result").html(msg).addClass("alert-danger");
+            }
+        });
+    }
+    
     $("#sync_now").click(function()
     {
         var is_syncing = $(this).attr("data-is_syncing");
@@ -64,25 +138,7 @@ $(document).ready(function()
             return ;
         }
         
-        var _this = $(this);
-        _this.attr("data-is_syncing", 1);
-        
-        var tc = 0;
-        $("#query_table tbody tr").not(".sr-hidden").each(function()
-        {
-            var will_execute = $(this).find("select.will_execute").val();
-            
-            if (will_execute == "1")
-            {
-                tc++;
-            }
-        });
-        
-        _this.html("Syncing 0/" + tc);
-        
-        $("td.result").removeClass("alert-success alert-danger").html("");
-        
-        var rc = 0;
+        query_list = [];
         $("#query_table tbody tr").not(".sr-hidden").each(function()
         {
             var _tr = $(this);
@@ -94,68 +150,21 @@ $(document).ready(function()
             
             if (data.will_execute)
             {
-                _tr.find(".result").html("Running...");
-                rc++;
-                _this.html("Syncing " + rc  + "/" + tc);
-                
-                var url = '<?= Config::url("ajax_other_developer_query_sync") ?>';
-                
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    async: false, 
+                query_list.push({
                     data : data,
-                    success: function (response) 
-                    {
-                        if (response == "1")
-                        {
-                            _tr.find(".result").addClass("alert-success");
-                            if (data.will_execute == "1")
-                            {
-                                _tr.find(".result").html("Run Successfully");
-                            }
-                            else
-                            {
-                                _tr.find(".result").html("Ignored");
-                            }
-                            
-                            setTimeout(function()
-                            {
-                                _tr.remove();
-                            }, 2000);
-                        }
-                        else
-                        {
-                            _tr.find(".result").html(response).addClass("alert-danger");
-                        }
-                    },
-                    error: function (jqXHR, exception) 
-                    {
-                        var msg = '';
-                        if (jqXHR.status === 0) {
-                            msg = 'Not connect.\n Verify Network.';
-                        } else if (jqXHR.status == 404) {
-                            msg = 'Requested page not found. [404]';
-                        } else if (jqXHR.status == 500) {
-                            msg = 'Internal Server Error [500].';
-                        } else if (exception === 'parsererror') {
-                            msg = 'Requested JSON parse failed.';
-                        } else if (exception === 'timeout') {
-                            msg = 'Time out error.';
-                        } else if (exception === 'abort') {
-                            msg = 'Ajax request aborted.';
-                        } else {
-                            msg = 'Uncaught Error.\n' + jqXHR.responseText;
-                        }
-                        
-                        _tr.find(".result").html(msg).addClass("alert-danger");
-                    }
+                    tr : _tr
                 });
             }
         });
         
-        _this.attr("data-is_syncing", 0);
-        _this.html("Sync Now");
+        if (query_list.length > 0)
+        {
+            $("td.result").html("");
+            
+            $("#sync_now").attr("data-is_syncing", 1);
+            
+            query_exec(0);
+        }
         
         return false;
     });

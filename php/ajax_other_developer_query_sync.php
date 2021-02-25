@@ -19,16 +19,17 @@ try
     if ($_POST['will_execute'])
     {
         $db = config::$database['database'];
-
+        
+        if (SQL_LOCAL_CHANGE_ENABLE && !$mysql->query("SET GLOBAL general_log = 'OFF';"))
+        {
+            throw new Exception(mysqli_error(Mysql::$conn));
+        }
+        
         if (!$mysql->query("USE $db;"))
         {
             throw new Exception(mysqli_error(Mysql::$conn));
         }
 
-        if (!$mysql->query("SET GLOBAL general_log = 'OFF';"))
-        {
-            throw new Exception(mysqli_error(Mysql::$conn));
-        }
 
         if($mysql->query($developer_data["query"]) == false)
         {
@@ -52,7 +53,7 @@ catch(Exception $ex)
     echo $ex->getMessage();
 }
 
-if (!$mysql->query("SET GLOBAL general_log = 'ON';"))
+if (SQL_LOCAL_CHANGE_ENABLE && !$mysql->query("SET GLOBAL general_log = 'ON';"))
 {
     die(mysqli_error(Mysql::$conn));
 }
