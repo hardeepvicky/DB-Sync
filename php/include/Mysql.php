@@ -5,10 +5,10 @@ class Mysql
     public static $queryLog = true;
     public static $conn, $db, $logs;
     
-    public function __construct($host, $user, $password, $database)
+    public function __construct($config)
     {
-        self::$db = $database;
-        self::$conn = mysqli_connect($host, $user, $password, $database);
+        self::$db = $config['database'];
+        self::$conn = mysqli_connect($config['server'], $config['username'], $config['password'], $config['database'], $config['port']);
     }
     
     public function query($q)
