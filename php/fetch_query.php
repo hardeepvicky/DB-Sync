@@ -322,7 +322,7 @@ foreach($logs as $k => $log)
 {
     $logs[$k] = array(
         'id' => $id,
-        'datetime' => DateUtility::getDate($log['event_time'], 'd-M-Y H:i:s'),
+        'datetime' => $log['event_time'],
         'query' => $log['argument']
     );
     $id++;

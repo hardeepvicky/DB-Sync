@@ -13,7 +13,7 @@
 class DateUtility 
 {
     const DATE_FORMAT = 'Y-m-d';
-    const DATETIME_FORMAT = 'Y-m-d H:i:s';
+    const DATETIME_FORMAT = 'Y-m-d H:i:s.u';
 
     const DATE_OUT_FORMAT = "d-m-Y";
     const DATETIME_OUT_FORMAT = 'd-m-Y h:i a';

@@ -7,6 +7,7 @@ class Mysql
     
     public function __construct($config)
     {
+        $config['port'] = $config['port'] ?? 3306;
         self::$db = $config['database'];
         self::$conn = mysqli_connect($config['server'], $config['username'], $config['password'], $config['database'], $config['port']);
     }
