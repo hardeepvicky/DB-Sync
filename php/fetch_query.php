@@ -18,7 +18,7 @@ if (isset($_GET['write_query_to_csv']))
         }
         else if (DateUtility::compare($log["datetime"], $max_datetime) > 0)
         {
-            $max_datetime = DateUtility::getDate($log["datetime"], DateUtility::DATETIME_FORMAT);
+            $max_datetime = $log["datetime"];
         }
         
         if ($log['id'] > $max_id)
