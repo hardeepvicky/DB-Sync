@@ -307,8 +307,12 @@ usort($logs, function ($a, $b)
 {
     $a_time = strtotime($a["event_time"]);
     $b_time = strtotime($b["event_time"]);
+
+    if ($a_time == $b_time) {
+        return 0;
+    }
     
-    return $a_time < $b_time ? -1 : $a_time > $b_time ? 1 : 0;
+    return ($a_time < $b_time) ? -1 : 1;
 });
 
 $id = 1;
