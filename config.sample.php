@@ -24,18 +24,4 @@ class config extends SharedConfig
         "password" => "root",
         "database" => "test"
     );
-    
-    public static function init()
-    {
-        require_once '../../Config/database.php';
-        $databaseConfig = new DATABASE_CONFIG();
-        
-        self::$database['server'] = $databaseConfig->default["host"];
-        self::$database['username'] = $databaseConfig->default["login"];
-        self::$database['password'] = $databaseConfig->default["password"];
-        self::$database['database'] = $databaseConfig->default["database"];
-    }
 }
-
-//link to cakephp database file
-config::init();
