@@ -7,29 +7,15 @@ This tool use to sync database among developers working in git version control p
 # Setup
 <p>
 <ul>
-<li>Download this tool, put inside of your working project</li>
+<li>Download this code, put inside public directory of working project. so that u can access from web browser http://project-domain/DB-Sync</li>
 <li>Rename config.sample.php to config.php</li>
 <li>Change Constant <b>BASE_URL</b>(url path of db sync), <b>DEVELOPER</b>(Developer Name), <b>Git Path</b> : git_version("[PATH]"),  wheres [PATH] is path of your project where .git is located </li>
 <li>Change static database config</li>
-<li><b>Mysql Setting - Run Following Queries</b>
+<li><b>Mysql Setting - Run Following Queries whenever you start mysql service.</b>
   <ul>
     <li>SET GLOBAL log_output = 'TABLE';</li>
     <li>SET GLOBAL general_log = 'ON';</li>
   </ul>
   </li>
 </ul>
-</p>
-# Options 
-<p>
-<b>SharedConfig::$dml_tables</b> : By Default this tool only fetch DDL Change, But in some cases DML statements are required to distribute. So if you want to log DML change also, add those table names in this static variable
-<br/>
-<pre>
-class SharedConfig
-{
-    public static $dml_tables = array(
-        "settings", "menus"
-    );
-}
-</pre>
-In above Code, Tool will also log DML Changes of menus and settings table.
 </p>
