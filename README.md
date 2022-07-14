@@ -7,7 +7,7 @@ This tool use to sync database among developers working in git version control p
 # Setup
 <p>
 <ul>
-<li>Download this code, put inside public directory of working project. so that u can access from web browser http://project-domain/DB-Sync</li>
+<li>Download this code, put inside public directory of working project. so that u can access from web browser http://[project-domain]/DB-Sync</li>
 <li>Rename config.sample.php to config.php</li>
 <li>Change Constant <b>BASE_URL</b>(url path of db sync), <b>DEVELOPER</b>(Developer Name), <b>Git Path</b> : git_version("[PATH]"),  wheres [PATH] is path of your project where .git is located </li>
 <li>Change static database config</li>
